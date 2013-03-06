@@ -474,7 +474,10 @@ var WindowManager = (function() {
       // element so that doesn't work either.)
       //
       // The "real" fix for this defect is tracked in bug 842102.
-      setTimeout(function _setVisible() { iframe.setVisible(false); }, 50);
+      setTimeout(function _setVisible() {
+        iframe.setVisible(false);
+        iframe.dataset.visible = 'false';
+      }, 50);
     }
 
     screenElement.classList.remove('fullscreen-app');
@@ -746,11 +749,13 @@ var WindowManager = (function() {
     if ('setVisible' in openFrame.firstChild) {
       if (!AttentionScreen.isFullyVisible()) {
         openFrame.firstChild.setVisible(true);
+        openFrame.firstChild.dataset.visible = 'true';
       } else {
         // If attention screen is fully visible now,
         // don't give the open frame visible.
         // This is the case that homescreen is restarted behind attention screen
         openFrame.firstChild.setVisible(false);
+        openFrame.firstChild.dataset.visible = 'false';
       }
     }
   }
@@ -1016,10 +1021,14 @@ var WindowManager = (function() {
     // Before starting a new transition, let's make sure current transitions
     // are stopped and the state classes are cleaned up.
     // visibility status should also be reset.
-    if (openFrame && 'setVisible' in openFrame.firstChild)
+    if (openFrame && 'setVisible' in openFrame.firstChild) {
       openFrame.firstChild.setVisible(false);
-    if (closeFrame && 'setVisible' in closeFrame.firstChild)
+      openFrame.firstChild.dataset.visible = 'false';
+    }
+    if (closeFrame && 'setVisible' in closeFrame.firstChild) {
       closeFrame.firstChild.setVisible(false);
+      closeFrame.firstChild.dataset.visible = 'false';
+    }
 
     if (!isFirstRunApplication && newApp == homescreen &&
       !AttentionScreen.isFullyVisible()) {
@@ -1306,8 +1315,10 @@ var WindowManager = (function() {
     openFrame = frame;
 
     // set the frame to visible state
-    if ('setVisible' in iframe)
+    if ('setVisible' in iframe) {
       iframe.setVisible(true);
+      iframe.dataset.visible = 'true';
+    }
 
     setFrameBackground(openFrame, function gotBackground() {
       // Start the transition when this async/sync callback is called.
@@ -1515,8 +1526,10 @@ var WindowManager = (function() {
           // so Cards View will get a correct screenshot of the frame
           if (!e.detail.isActivity) {
             setAppSize(origin, false);
-            if ('setVisible' in app.iframe)
+            if ('setVisible' in app.iframe) {
               app.iframe.setVisible(false);
+              app.iframe.dataset.visible = 'false';
+            }
           }
         } else {
           ensureHomescreen();
@@ -1659,8 +1672,10 @@ var WindowManager = (function() {
     var app = runningApps[displayedApp];
     if (!app)
       return;
-    if ('setVisible' in app.iframe)
+    if ('setVisible' in app.iframe) {
       app.iframe.setVisible(visible);
+      app.iframe.dataset.visible = visible;
+    }
 
     // Restore/give away focus on visiblity change
     // so that the app can take back its focus
